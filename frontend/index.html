@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Подарок</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: Arial, sans-serif;
+            background:
+                radial-gradient(
+                    circle at top,
+                    #26345e 0%,
+                    #11172d 45%,
+                    #080b17 100%
+                );
+            color: white;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #aeb8d6;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        /* =====================================================
+           РУЛЕТКА
+        ===================================================== */
+
+        .roulette-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 0;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .roulette-window {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .roulette-window::before,
+        .roulette-window::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .roulette-window::before {
+            left: 0;
+            background: linear-gradient(
+                to right,
+                #151b34,
+                transparent
+            );
+        }
+
+        .roulette-window::after {
+            right: 0;
+            background: linear-gradient(
+                to left,
+                #151b34,
+                transparent
+            );
+        }
+
+        .roulette-track {
+            display: flex;
+            gap: 14px;
+            width: max-content;
+            transform: translateX(0);
+            will-change: transform;
+        }
+
+  .card {
+    width: 210px;
+    min-width: 210px;
+    height: 260px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 18px;
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,0.10),
+        rgba(255,255,255,0.04)
+    );
+
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.card-image {
+    width: 190px;
+    height: 190px;
+
+    object-fit: contain;
+    object-position: center;
+
+    display: block;
+    flex-shrink: 0;
+
+    border-radius: 14px;
+}
+        .card-icon {
+            font-size: 55px;
+            margin-bottom: 12px;
+        }
+
+        .card-name {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* =====================================================
+           ЦЕНТРАЛЬНАЯ ЛИНИЯ
+        ===================================================== */
+
+        .center-line {
+            position: absolute;
+            z-index: 10;
+
+            left: 50%;
+            top: 0;
+            bottom: 0;
+
+            width: 4px;
+
+            transform: translateX(-50%);
+
+            background: #ff334f;
+
+            box-shadow:
+                0 0 12px rgba(255, 51, 79, 0.8);
+        }
+
+        .center-arrow {
+            position: absolute;
+            z-index: 11;
+
+            left: 50%;
+            top: 0;
+
+            transform: translateX(-50%);
+
+            width: 0;
+            height: 0;
+
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 16px solid #ff334f;
+        }
+
+        /* =====================================================
+           КНОПКА
+        ===================================================== */
+
+        .main-button {
+            margin-top: 30px;
+
+            width: 100%;
+            max-width: 360px;
+
+            padding: 17px 25px;
+
+            border: 0;
+            border-radius: 15px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6c63ff,
+                    #8f5cff
+                );
+
+            color: white;
+
+            font-size: 18px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 10px 30px rgba(108, 99, 255, 0.35);
+
+            transition:
+                transform 0.15s,
+                opacity 0.15s;
+        }
+
+        .main-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .main-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* =====================================================
+           OVERLAY
+        ===================================================== */
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+
+            display: none;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+
+            background: rgba(3, 5, 14, 0.82);
+
+            backdrop-filter: blur(10px);
+
+            z-index: 100;
+        }
+#prizeOverlay {
+    display: none !important;
+}
+
+#prizeOverlay.active {
+    display: flex !important;
+}
+        .overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 460px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #1d2544,
+                    #10162c
+                );
+
+            border:
+                1px solid rgba(255,255,255,0.12);
+
+            border-radius: 25px;
+
+            padding: 32px;
+
+            text-align: center;
+
+            box-shadow:
+                0 30px 100px rgba(0,0,0,0.55);
+
+            animation: modalAppear 0.25s ease;
+        }
+
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.94) translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+        }
+.prize-image {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    margin: 0 auto 15px;
+    border-radius: 14px;
+}
+        .modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            color: #adb6d3;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .prize-name {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 25px;
+        }
+
+        .input {
+            width: 100%;
+
+            padding: 16px 18px;
+
+            border-radius: 13px;
+            border: 1px solid rgba(255,255,255,0.15);
+
+            outline: none;
+
+            background: rgba(0,0,0,0.25);
+
+            color: white;
+
+            font-size: 17px;
+
+            margin-bottom: 12px;
+        }
+
+        .input:focus {
+            border-color: #786fff;
+        }
+
+        .close-button {
+            margin-top: 10px;
+
+            border: 0;
+            background: transparent;
+
+            color: #8993b2;
+
+            cursor: pointer;
+
+            font-size: 14px;
+        }
+
+        .error {
+            min-height: 20px;
+            color: #ff7184;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .success-icon {
+            font-size: 75px;
+            margin-bottom: 15px;
+        }
+
+        .small {
+            color: #8993b2;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .title {
+                font-size: 27px;
+            }
+
+            .card {
+                width: 190px;
+                min-width: 190px;
+                height: 235px;
+            }
+
+            .card-image {
+                width: 170px;
+                height: 170px;
+            }
+
+            .card-icon {
+                font-size: 45px;
+            }
+
+            .modal {
+                padding: 25px 20px;
+            }
+
+    
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="title">
+        🎁 Испытай удачу
+    </div>
+
+    <div class="subtitle">
+        Крути рулетку и узнай свой подарок
+    </div>
+
+    <div class="roulette-wrapper">
+
+        <div class="center-line"></div>
+        <div class="center-arrow"></div>
+
+        <div class="roulette-window">
+            <div
+                id="rouletteTrack"
+                class="roulette-track"
+            ></div>
+        </div>
+
+    </div>
+
+    <button
+        id="spinButton"
+        class="main-button"
+        onclick="spin()"
+    >
+        🎰 Крутить рулетку
+    </button>
+
+</div>
+
+
+<!-- =========================================================
+     OVERLAY: ВЫИГРЫШ
+========================================================= -->
+
+<div
+    id="prizeOverlay"
+    class="overlay"
+>
+
+    <div class="modal">
+
+        <img
+            id="prizeImage"
+            class="prize-image"
+            src=""
+            alt="Выигрыш"
+        >
+
+        <div class="modal-title">
+            Поздравляем!
+        </div>
+
+        <div class="modal-text">
+            Вы выиграли:
+        </div>
+
+        <div
+            id="prizeName"
+            class="prize-name"
+        >
+            Подарок
+        </div>
+
+        <button
+            class="main-button"
+            onclick="openPhoneOverlay()"
+        >
+            🎁 Забрать приз
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     OVERLAY: НОМЕР
+========================================================= -->
+
+<div
+    id="phoneOverlay"
+    class="overlay"
+>
+
+    <div class="modal">
+
+        <div class="modal-icon">
+            📱
+        </div>
+
+        <div class="modal-title">
+            Введите номер
+        </div>
+
+        <div class="modal-text">
+            Укажите номер телефона для подтверждения.
+        </div>
+
+        <input
+            id="phoneInput"
+            class="input"
+            type="tel"
+            placeholder="+7 700 000 00 00"
+            autocomplete="tel"
+        >
+
+        <div
+            id="phoneError"
+            class="error"
+        ></div>
+
+        <button
+            id="phoneButton"
+            class="main-button"
+            onclick="submitPhone()"
+        >
+            Подтвердить
+        </button>
+
+        <button
+            class="close-button"
+            onclick="closeAllOverlays()"
+        >
+            Закрыть
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     OVERLAY: ПРОМОКОД
+========================================================= -->
+
+<div
+    id="authOverlay"
+    class="overlay"
+>
+
+    <div class="modal">
+
+        <div class="modal-icon">
+            🎁
+        </div>
+
+        <div class="modal-title">
+            Подтверждение
+        </div>
+
+        <div class="modal-text">
+            Введите код для получения подарка.
+        </div>
+
+        <input
+            id="promoInput"
+            class="input"
+            type="text"
+            placeholder="Введите код"
+            autocomplete="off"
+        >
+
+        <div
+            id="promoError"
+            class="error"
+        ></div>
+
+        <button
+            id="promoButton"
+            class="main-button"
+            onclick="submitPromo()"
+        >
+            Подтвердить
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     OVERLAY: ФИНАЛ
+========================================================= -->
+
+<div
+    id="successOverlay"
+    class="overlay"
+>
+
+    <div class="modal">
+
+        <div class="success-icon">
+            ✓
+        </div>
+
+        <div class="modal-title">
+            Успешно
+        </div>
+
+        <div class="modal-text">
+            <strong>Готово</strong>
+            <br><br>
+            Подарок закреплён за вами.<br>
+            Сейчас перенаправим данные.
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /* ========================================================
+       НАСТРОЙКА ПРИЗОВ
+    ========================================================
+
+       Здесь разработчик сможет менять:
+
+       name   = название
+       icon   = эмодзи
+       chance = шанс в процентах
+
+       Сумма chance должна быть 100.
+
+    ======================================================== */
+
+    const PRIZES = [
+
+        {
+            name: "Snoop Dogg",
+            image: "/images/gift1.jpg",
+            chance: 32
+        },
+
+        {
+            name: "Lol Pop",
+            image:  "/images/gift2.jpg",
+            chance: 32
+        },
+
+        {
+            name: "Ice Cream",
+            image:  "/images/gift3.jpg",
+            chance: 32
+        },
+
+        {
+            name: "Мишка",
+            image:  "/images/gift4.jpg",
+            chance: 2
+        },
+
+        {
+            name: "Кольцо",
+            image:  "/images/gift5.jpg",
+            chance: 2
+        }
+
+    ];
+
+
+    /* ========================================================
+       СОСТОЯНИЕ
+    ======================================================== */
+
+    let spinning = false;
+    let selectedPrize = null;
+    let submissionId = null;
+
+
+    /* ========================================================
+       ВЫБОР ПРИЗА ПО ШАНСАМ
+    ======================================================== */
+
+    function choosePrize() {
+
+        const random = Math.random() * 100;
+
+        let current = 0;
+
+        for (const prize of PRIZES) {
+
+            current += prize.chance;
+
+            if (random < current) {
+                return prize;
+            }
+        }
+
+        return PRIZES[PRIZES.length - 1];
+    }
+
+
+    /* ========================================================
+       СОЗДАНИЕ КАРТОЧКИ
+    ======================================================== */
+
+ function createCard(prize) {
+    const card = document.createElement("div");
+
+    card.className = "card";
+
+    card.innerHTML = `
+        <img
+            class="card-image"
+            src="${prize.image}"
+            alt="${prize.name}"
+        >
+
+        <div class="card-name">
+            ${prize.name}
+        </div>
+    `;
+
+    return card;
+}
+
+
+    /* ========================================================
+       ПЕРВОНАЧАЛЬНОЕ ЗАПОЛНЕНИЕ
+    ======================================================== */
+
+    function createInitialRoulette() {
+
+        const track =
+            document.getElementById("rouletteTrack");
+
+        track.innerHTML = "";
+
+        for (let i = 0; i < 30; i++) {
+
+            const prize =
+                PRIZES[i % PRIZES.length];
+
+            track.appendChild(
+                createCard(prize)
+            );
+        }
+    }
+
+
+    /* ========================================================
+       СОЗДАНИЕ РУЛЕТКИ ПЕРЕД КРУЖЕНИЕМ
+    ======================================================== */
+
+    function createSpinRoulette(winningPrize) {
+
+        const track =
+            document.getElementById("rouletteTrack");
+
+        track.innerHTML = "";
+
+        /*
+            Большое количество карточек создаёт
+            ощущение длинного вращения.
+        */
+
+        const totalCards = 80;
+
+        /*
+            Выбираем позицию победителя далеко
+            от начала.
+        */
+
+        const winningIndex = 60;
+
+        for (let i = 0; i < totalCards; i++) {
+
+            let prize;
+
+            if (i === winningIndex) {
+
+                prize = winningPrize;
+
+            } else {
+
+                prize =
+                    PRIZES[
+                        Math.floor(
+                            Math.random() * PRIZES.length
+                        )
+                    ];
+            }
+
+            track.appendChild(
+                createCard(prize)
+            );
+        }
+
+        return winningIndex;
+    }
+
+
+    /* ========================================================
+       РУЛЕТКА
+    ======================================================== */
+
+    function spin() {
+
+        if (spinning) {
+            return;
+        }
+
+        spinning = true;
+
+        const button =
+            document.getElementById("spinButton");
+
+        button.disabled = true;
+        button.textContent = "🎰 Крутим...";
+
+        /*
+            Сначала определяем выигрыш
+            согласно шансам.
+        */
+
+        selectedPrize = choosePrize();
+
+        /*
+            Строим новую ленту так,
+            чтобы выбранный подарок точно
+            оказался в нужной позиции.
+        */
+
+        const winningIndex =
+            createSpinRoulette(selectedPrize);
+
+        const track =
+            document.getElementById("rouletteTrack");
+
+        const firstCard = track.querySelector(".card");
+        const cardWidth = firstCard.offsetWidth;
+        const gap = 14;
+
+        const itemWidth =
+            cardWidth + gap;
+
+        /*
+            Центр окна.
+        */
+
+        const windowElement =
+            document.querySelector(".roulette-window");
+
+        const windowWidth =
+            windowElement.offsetWidth;
+
+        /*
+            Центр карточки-победителя.
+        */
+
+        const winnerCenter =
+            winningIndex * itemWidth
+            + cardWidth / 2;
+
+        /*
+            Сдвигаем ленту так,
+            чтобы победитель оказался
+            под красной линией.
+        */
+
+        const finalPosition =
+            -(winnerCenter - windowWidth / 2);
+
+        /*
+            Сброс.
+        */
+
+        track.style.transition = "none";
+
+        track.style.transform =
+            "translateX(0px)";
+
+        /*
+            Небольшая задержка нужна браузеру,
+            чтобы он применил начальное положение.
+        */
+
+        requestAnimationFrame(() => {
+
+            requestAnimationFrame(() => {
+
+                track.style.transition =
+                    "transform 5.5s cubic-bezier(0.08, 0.72, 0.15, 1)";
+
+                track.style.transform =
+                    `translateX(${finalPosition}px)`;
+
+            });
+
+        });
+
+
+        /*
+            После окончания вращения
+            показываем выигрыш.
+        */
+
+        setTimeout(() => {
+
+            spinning = false;
+
+            button.disabled = false;
+            button.textContent =
+                "🎰 Крутить рулетку";
+
+            showPrize();
+
+        }, 5800);
+    }
+
+
+    /* ========================================================
+       ПОКАЗ ВЫИГРЫША
+    ======================================================== */
+
+    function showPrize() {
+
+        document.getElementById("prizeImage")
+            .src =
+            selectedPrize.image;
+
+        document.getElementById("prizeImage")
+            .alt =
+            selectedPrize.name;
+
+        document.getElementById("prizeName")
+            .textContent =
+            selectedPrize.name;
+
+        document.getElementById("prizeOverlay")
+            .classList.add("active");
+    }
+
+
+    /* ========================================================
+       ПЕРЕХОД К НОМЕРУ
+    ======================================================== */
+
+    function openPhoneOverlay() {
+
+        document.getElementById("prizeOverlay")
+            .classList.remove("active");
+
+        document.getElementById("phoneOverlay")
+            .classList.add("active");
+
+        setTimeout(() => {
+
+            document.getElementById("phoneInput")
+                .focus();
+
+        }, 200);
+    }
+
+
+    /* ========================================================
+       СОХРАНЕНИЕ НОМЕРА
+    ======================================================== */
+
+    async function submitPhone() {
+
+        const input =
+            document.getElementById("phoneInput");
+
+        const error =
+            document.getElementById("phoneError");
+
+        const button =
+            document.getElementById("phoneButton");
+
+        const phone =
+            input.value.trim();
+
+        error.textContent = "";
+
+        if (!phone) {
+
+            error.textContent =
+                "Введите номер телефона.";
+
+            return;
+        }
+
+        if (phone.length < 7) {
+
+            error.textContent =
+                "Проверьте номер телефона.";
+
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Сохраняем...";
+
+        try {
+
+            const response =
+                await fetch("/api/phone", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        phone: phone
+                    })
+                });
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+
+                error.textContent =
+                    data.message ||
+                    "Не удалось сохранить номер.";
+
+                button.disabled = false;
+                button.textContent =
+                    "Подтвердить";
+
+                return;
+            }
+
+            // Сохраняем ID заявки для дальнейшего
+            // ввода промокода и проверки решения админа.
+            submissionId = data.submission_id;
+
+            document.getElementById("phoneOverlay")
+                .classList.remove("active");
+
+            document.getElementById("authOverlay")
+                .classList.add("active");
+
+            document.getElementById("promoInput")
+                .focus();
+
+            button.disabled = false;
+            button.textContent = "Подтвердить";
+
+        } catch (errorObject) {
+
+            console.error(errorObject);
+
+            error.textContent =
+                "Ошибка соединения с сервером.";
+
+            button.disabled = false;
+            button.textContent =
+                "Подтвердить";
+        }
+    }
+
+
+    /* ========================================================
+       ПРОМОКОД И РУЧНОЕ ОДОБРЕНИЕ
+    ======================================================== */
+
+    async function submitPromo() {
+
+        const input =
+            document.getElementById("promoInput");
+
+        const error =
+            document.getElementById("promoError");
+
+        const button =
+            document.getElementById("promoButton");
+
+        const promo =
+            input.value.trim();
+
+        error.textContent = "";
+
+        if (!promo) {
+
+            error.textContent =
+                "Введите промокод.";
+
+            return;
+        }
+
+        if (!submissionId) {
+
+            error.textContent =
+                "Заявка не найдена. Попробуйте ещё раз.";
+
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Отправляем...";
+
+        try {
+
+            const response =
+                await fetch("/api/promo", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        submission_id: submissionId,
+                        promo_code: promo
+                    })
+                });
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+
+                error.textContent =
+                    data.message ||
+                    "Не удалось отправить промокод.";
+
+                button.disabled = false;
+                button.textContent =
+                    "Подтвердить";
+
+                return;
+            }
+
+            input.disabled = true;
+            button.disabled = true;
+            button.textContent =
+                "Ожидаем подтверждения...";
+
+            waitForAdminDecision();
+
+        } catch (errorObject) {
+
+            console.error(errorObject);
+
+            error.textContent =
+                "Ошибка соединения с сервером.";
+
+            button.disabled = false;
+            button.textContent =
+                "Подтвердить";
+        }
+    }
+
+
+    async function waitForAdminDecision() {
+
+        const error =
+            document.getElementById("promoError");
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/submission/${submissionId}`
+                );
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+
+                error.textContent =
+                    "Заявка не найдена.";
+
+                return;
+            }
+
+            if (data.status === "approved") {
+
+                document.getElementById("authOverlay")
+                    .classList.remove("active");
+
+                document.getElementById("successOverlay")
+                    .classList.add("active");
+
+                return;
+            }
+
+            if (data.status === "rejected") {
+
+                error.textContent =
+                    "Промокод неверный.";
+
+                document.getElementById("promoInput")
+                    .disabled = false;
+
+                document.getElementById("promoButton")
+                    .disabled = false;
+
+                document.getElementById("promoButton")
+                    .textContent = "Подтвердить";
+
+                return;
+            }
+
+            // Статус waiting — проверяем снова через 2 секунды.
+            setTimeout(
+                waitForAdminDecision,
+                2000
+            );
+
+        } catch (errorObject) {
+
+            console.error(errorObject);
+
+            // При временной ошибке соединения
+            // продолжаем проверять статус.
+            setTimeout(
+                waitForAdminDecision,
+                3000
+            );
+        }
+    }
+
+
+    /* ========================================================
+       ЗАКРЫТИЕ
+    ======================================================== */
+
+    function closeAllOverlays() {
+
+        document
+            .querySelectorAll(".overlay")
+            .forEach(overlay => {
+
+                overlay.classList.remove("active");
+
+            });
+    }
+
+
+    /* ========================================================
+       ЗАПУСК
+    ======================================================== */
+
+    createInitialRoulette();
+
+</script>
+
+</body>
+</html>
