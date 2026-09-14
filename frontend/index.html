@@ -45,6 +45,70 @@
             text-align: center;
         }
 
+
+        /* Профиль над заголовком */
+        .profile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .profile-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.28);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+        }
+
+        .profile-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        /* Медленное движение рулетки в режиме ожидания */
+        .roulette-track.idle {
+            animation: idleRoulette 18s linear infinite;
+        }
+
+        @keyframes idleRoulette {
+            from { transform: translateX(0); }
+            to { transform: translateX(-1070px); }
+        }
+
+        .promo-help-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+            min-width: 155px;
+            padding: 11px 18px;
+            margin: 2px auto 14px;
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 11px;
+            background: rgba(255,255,255,0.06);
+            color: #c7cce0;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .promo-help-text {
+            display: none;
+            color: #aeb8d6;
+            font-size: 14px;
+            line-height: 1.45;
+            margin: 0 0 14px;
+        }
+
+        .promo-help-text.active {
+            display: block;
+        }
+
         .title {
             font-size: 34px;
             font-weight: 800;
@@ -434,6 +498,15 @@
 
 <div class="app">
 
+    <div class="profile">
+        <img
+            class="profile-avatar"
+            src="https://i.pravatar.cc/84?img=12"
+            alt="Аватар"
+        >
+        <div class="profile-name">LuckyDeals</div>
+    </div>
+
     <div class="title">
         🎁 Испытай удачу
     </div>
@@ -539,7 +612,7 @@
             id="phoneInput"
             class="input"
             type="tel"
-            placeholder="+7 700 000 00 00"
+            placeholder="+0 000 000 00 00"
             autocomplete="tel"
         >
 
@@ -598,6 +671,18 @@
             placeholder="Введите код"
             autocomplete="off"
         >
+
+        <button
+            type="button"
+            class="promo-help-button"
+            onclick="togglePromoHelp()"
+        >
+            Где найти код?
+        </button>
+
+        <div id="promoHelpText" class="promo-help-text">
+            Код попросите у продавца в личном сообщении.
+        </div>
 
         <div
             id="promoError"
@@ -666,35 +751,16 @@
 
     const PRIZES = [
 
-        {
-            name: "Snoop Dogg",
-            image: "/images/gift1.jpg",
-            chance: 32
-        },
-
-        {
-            name: "Lol Pop",
-            image:  "/images/gift2.jpg",
-            chance: 32
-        },
-
-        {
-            name: "Ice Cream",
-            image:  "/images/gift3.jpg",
-            chance: 32
-        },
-
-        {
-            name: "Мишка",
-            image:  "/images/gift4.jpg",
-            chance: 2
-        },
-
-        {
-            name: "Кольцо",
-            image:  "/images/gift5.jpg",
-            chance: 2
-        }
+        { name: "Snoop Dogg", image: "/images/gift1.jpg", chance: 10 },
+        { name: "Lol Pop", image: "/images/gift2.jpg", chance: 10 },
+        { name: "Ice Cream", image: "/images/gift3.jpg", chance: 10 },
+        { name: "Мишка", image: "/images/gift4.jpg", chance: 10 },
+        { name: "Кольцо", image: "/images/gift5.jpg", chance: 10 },
+        { name: "Подарок", image: "/images/gift1.jpg", chance: 10 },
+        { name: "Звезда", image: "/images/gift2.jpg", chance: 10 },
+        { name: "Сердце", image: "/images/gift3.jpg", chance: 10 },
+        { name: "Корона", image: "/images/gift4.jpg", chance: 10 },
+        { name: "Сюрприз", image: "/images/gift5.jpg", chance: 10 }
 
     ];
 
@@ -711,6 +777,18 @@
     /* ========================================================
        ВЫБОР ПРИЗА ПО ШАНСАМ
     ======================================================== */
+
+    function startIdleRoulette() {
+        const track = document.getElementById("rouletteTrack");
+        if (!track || spinning) return;
+        track.classList.add("idle");
+    }
+
+    function stopIdleRoulette() {
+        const track = document.getElementById("rouletteTrack");
+        if (!track) return;
+        track.classList.remove("idle");
+    }
 
     function choosePrize() {
 
@@ -842,6 +920,7 @@
         }
 
         spinning = true;
+        stopIdleRoulette();
 
         const button =
             document.getElementById("spinButton");
@@ -945,6 +1024,7 @@
                 "🎰 Крутить рулетку";
 
             showPrize();
+            startIdleRoulette();
 
         }, 5800);
     }
@@ -1265,6 +1345,13 @@
        ЗАКРЫТИЕ
     ======================================================== */
 
+    function togglePromoHelp() {
+        const help = document.getElementById("promoHelpText");
+        if (help) {
+            help.classList.toggle("active");
+        }
+    }
+
     function closeAllOverlays() {
 
         document
@@ -1282,6 +1369,7 @@
     ======================================================== */
 
     createInitialRoulette();
+    startIdleRoulette();
 
 </script>
 
