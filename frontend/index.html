@@ -276,20 +276,45 @@ button {
   bottom:0;
   width:4px;
   transform:translateX(-50%);
-  background:var(--red);
-  box-shadow:0 0 12px rgba(255,60,88,.95), 0 0 32px rgba(255,60,88,.4);
+  background:linear-gradient(
+    to bottom,
+    #ff4f67 0%,
+    #ff3c58 22%,
+    #b967ff 50%,
+    #ff3c58 78%,
+    #ff4f67 100%
+  );
+  box-shadow:
+    0 0 10px rgba(255,60,88,.85),
+    0 0 24px rgba(185,103,255,.30);
+  overflow:visible;
 }
 
-.center-marker::before {
+.center-marker::before,
+.center-marker::after {
   content:"";
   position:absolute;
   left:50%;
-  top:0;
-  transform:translate(-50%,-1px);
+  transform:translateX(-50%);
+  width:0;
+  height:0;
   border-left:11px solid transparent;
   border-right:11px solid transparent;
-  border-top:17px solid var(--red);
-  filter:drop-shadow(0 0 8px rgba(255,60,88,.8));
+  filter:drop-shadow(0 0 8px rgba(255,60,88,.75));
+}
+
+.center-marker::before {
+  top:-1px;
+  border-top:17px solid #ff3c58;
+  border-bottom:0;
+  filter:drop-shadow(0 0 8px rgba(255,60,88,.75));
+}
+
+.center-marker::after {
+  bottom:-1px;
+  border-bottom:17px solid #ff3c58;
+  border-top:0;
+  filter:drop-shadow(0 0 8px rgba(255,60,88,.75));
 }
 
 .roulette-caption {
@@ -753,7 +778,7 @@ button {
       <div class="profile-name">Portals Market</div>
     </div>
 
-    <h1 class="title">🎁 Испытай удачу</h1>
+    <h1 class="title">Испытай удачу</h1>
     <div class="subtitle">Крути рулетку и узнай свой подарок</div>
 
     <div class="badges">
@@ -775,20 +800,19 @@ button {
     </section>
 
     <button id="spinButton" class="main-button" type="button" onclick="spin()">
-      🎰 Крутить рулетку
+      Крутить рулетку
     </button>
 
     <div class="micro-stats">
       <div class="stat"><strong>11</strong>доступных подарков</div>
-      <div class="stat"><strong>5.5 сек</strong>анимация вращения</div>
-      <div class="stat"><strong>100%</strong>результат фиксируется</div>
+            <div class="stat"><strong>100%</strong>результат фиксируется</div>
     </div>
 
     <section class="section">
       <div class="section-title">🎁 Подарки и шансы</div>
       <div id="prizeList" class="prize-list"></div>
       <div class="notice">
-        Проценты ниже соответствуют конфигурации рулетки. Сумма вероятностей должна быть 100%.
+        Отображение шансов и редкости — тестовое. Реальные шансы рулетки хранятся отдельно и не изменены.
       </div>
     </section>
 
@@ -806,6 +830,13 @@ button {
 
     <div id="prizeName" class="prize-name">Подарок</div>
     <div id="rarityLabel" class="rarity-label common">COMMON</div>
+    <div id="actualChance" style="
+      position:relative;
+      margin:0 0 8px;
+      color:#8f99b8;
+      font-size:11px;
+      font-weight:800;
+    ">Шанс выпадения: —</div>
 
     <button class="main-button" type="button" onclick="openPhoneOverlay()">
       🎁 Забрать подарок
@@ -953,6 +984,31 @@ let submissionId = null;
 let toastTimer = null;
 
 /* ==============================
+   ТОЛЬКО ВИЗУАЛЬНЫЕ ЗНАЧЕНИЯ
+   Реальные chance в PRIZES НЕ МЕНЯЕМ.
+   ============================== */
+const OVERLAY_DISPLAY = {
+  "Кольцо":         { chance: "30%",   rarity: "COMMON" },
+  "Мишка":          { chance: "30%",   rarity: "COMMON" },
+  "Кубок":          { chance: "30%",   rarity: "COMMON" },
+  "Chill Flame":    { chance: "1.25%", rarity: "LEGENDARY" },
+  "Vice Cream":     { chance: "1.25%", rarity: "LEGENDARY" },
+  "Snoop Dogg":     { chance: "1.25%", rarity: "LEGENDARY" },
+  "Lol Pop":        { chance: "1.25%", rarity: "LEGENDARY" },
+  "Victory Medal":  { chance: "1.25%", rarity: "LEGENDARY" },
+  "Light Sword":    { chance: "1.25%", rarity: "LEGENDARY" },
+  "Evil Eye":       { chance: "1.25%", rarity: "LEGENDARY" },
+  "Ice Cream":      { chance: "1.25%", rarity: "LEGENDARY" }
+};
+
+function getDisplayedInfo(prize) {
+  return OVERLAY_DISPLAY[prize?.name] || {
+    chance: "—",
+    rarity: "RARE"
+  };
+}
+
+/* ==============================
    УТИЛИТЫ
    ============================== */
 function escapeHtml(value) {
@@ -966,13 +1022,30 @@ function escapeHtml(value) {
 }
 
 function getRarity(prize) {
-  if (prize && prize.rarity) return prize.rarity;
-  const chance = Number(prize?.chance) || 0;
+  const rarityMap = {
+    "Кольцо": "common",
+    "Мишка": "common",
+    "Кубок": "common",
 
-  if (chance <= 1) return "legendary";
-  if (chance <= 5) return "epic";
-  if (chance <= 10) return "rare";
-  return "common";
+    "Chill Flame": "legendary",
+    "Vice Cream": "legendary",
+    "Snoop Dogg": "legendary",
+    "Lol Pop": "legendary",
+    "Victory Medal": "legendary",
+    "Light Sword": "legendary",
+    "Evil Eye": "legendary",
+    "Ice Cream": "legendary"
+  };
+
+  return rarityMap[prize?.name] || "common";
+}
+
+/*
+  Только визуальные тестовые значения для Win Overlay.
+  Массив PRIZES и реальные шансы рулетки не изменяются.
+*/
+function getOverlayInfo(prize) {
+  return getDisplayedInfo(prize);
 }
 
 function vibrate(pattern) {
@@ -1133,18 +1206,23 @@ function spin() {
 function showPrize() {
   if (!selectedPrize) return;
 
-  const rarity = getRarity(selectedPrize);
+  const overlayInfo = getOverlayInfo(selectedPrize);
 
   const image = document.getElementById("prizeImage");
   const name = document.getElementById("prizeName");
   const label = document.getElementById("rarityLabel");
+  const chance = document.getElementById("actualChance");
 
   image.src = selectedPrize.image;
   image.alt = selectedPrize.name;
   name.textContent = selectedPrize.name;
 
-  label.textContent = rarity.toUpperCase();
-  label.className = `rarity-label ${rarity}`;
+  label.textContent = overlayInfo.rarity;
+  label.className = `rarity-label ${overlayInfo.rarity.toLowerCase()}`;
+
+  if (chance) {
+    chance.textContent = `Шанс выпадения: ${overlayInfo.chance}`;
+  }
 
   openOverlay("prizeOverlay");
   launchConfetti();
@@ -1397,13 +1475,17 @@ document.addEventListener("keydown", event => {
 function renderPrizeList() {
   const list = document.getElementById("prizeList");
 
-  list.innerHTML = PRIZES.map(prize => `
-    <div class="prize-mini">
-      <img src="${escapeHtml(prize.image)}" alt="">
-      <div class="prize-mini-name">${escapeHtml(prize.name)}</div>
-      <div class="prize-mini-chance">${escapeHtml(prize.chance)}%</div>
-    </div>
-  `).join("");
+  list.innerHTML = PRIZES.map(prize => {
+    const display = getDisplayedInfo(prize);
+
+    return `
+      <div class="prize-mini">
+        <img src="${escapeHtml(prize.image)}" alt="">
+        <div class="prize-mini-name">${escapeHtml(prize.name)}</div>
+        <div class="prize-mini-chance">${escapeHtml(display.chance)}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 /* ==============================
